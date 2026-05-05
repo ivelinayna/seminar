@@ -71,11 +71,11 @@ All experiments use `random_state=42` for reproducibility. Notebook outputs and 
 
 ## Author
 
-Ivelina Naydenova — Master's student, Information Systems, JMU Würzburg
+Ivelina Yaneva — Master's student, Information Systems, JMU Würzburg
 
 ## Supervisor
 
-[Name des Betreuers]
+Viet Nguyen
 
 ## License
 
