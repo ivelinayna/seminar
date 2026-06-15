@@ -1,0 +1,8 @@
+model,accuracy,f1_macro,f1_weighted,recall_macro,recall_positive,recall_negative
+majority_baseline,0.6886,0.4078,0.5616,0.5,1.0,0.0
+naive_bayes,0.8397,0.7871,0.827,0.7604,0.9707,0.5502
+logreg,0.8711,0.8378,0.8655,0.8165,0.9612,0.6718
+gboost,0.8569,0.8172,0.8493,0.7941,0.9607,0.6275
+naive_bayes_resampled,0.8596,0.8454,0.8631,0.8689,0.8442,0.8936
+logreg_balanced,0.8849,0.8698,0.8865,0.8822,0.8893,0.875
+gboost_balanced,0.8503,0.8343,0.8537,0.8549,0.8426,0.8671

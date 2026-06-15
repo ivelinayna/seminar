@@ -55,3 +55,9 @@ paper/*.bbl
 paper/*.blg
 paper/*.fls
 paper/*.fdb_latexmk
+paper/*-eps-converted-to.pdf
+paper/*.lof
+paper/*.lot
+paper/*.run.xml
+paper/*.bcf
+paper/*.xdv

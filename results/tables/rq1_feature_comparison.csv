@@ -1,0 +1,3 @@
+features,n_features,accuracy,f1_macro,recall_negative
+tfidf_unigram,8838,0.8755,0.8607,0.8828
+tfidf_uni_bigram,20000,0.8849,0.8698,0.875
