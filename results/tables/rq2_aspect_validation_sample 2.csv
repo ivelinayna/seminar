@@ -1,0 +1,29 @@
+aspect,example_sentence,vader_compound,vader_label
+delivery,"In this latest subscription, the publisher has started very frustrating practices and I've been billed for things I didn't request.",-0.493,negative
+delivery,"So I hung up, and the next evening, 30 hours later, called again.",0.0,neutral
+delivery,"She kindly offered to place the order for me, but by that point, I had had such problems getting through to customer service that I decided I didn't want anythi",0.921,positive
+delivery,"He was very nice, and told me he had found the subscription, which he would cancel, and that I should be receiving my PayPal refund within 7-10 days.<br /><br /",0.272,positive
+packaging,I've tried Ipsy and Birchbox but Allure is by far my favorite!,0.648,positive
+packaging,I'm a mask freak so I fell I love with my first box loaded with masks of all kinds.,0.318,positive
+packaging,"The second box, I was blown away again.",0.0,neutral
+packaging,"So far, I am loving the Allure Beauty Box!!",0.851,positive
+quality,"If I didn't want to keep the DVD and pay for it, Discover required that I go through a several-step procedure to send the material back.",-0.159,negative
+quality,"Lastly, the magazine identified an address of my family member and has started to send materials to my sister -- for me, doing similar things like sending unwan",0.153,positive
+quality,I hope Discover takes the hint and stops sending me all this material.,0.318,positive
+quality,I couldn't pass up the subscription price which is definitely cheaper than newsstand.,0.402,positive
+price,The cost can't be beat.,0.0,neutral
+price,"The toys that I received didn't have good reviews on amazon.com, although their ""list"" prices were always more than $20.",-0.341,negative
+price,"Overall, this box was a good value for our cat and she found some new favorite toys.",0.807,positive
+price,I couldn't pass up the subscription price which is definitely cheaper than newsstand.,0.402,positive
+content,I LOVE THIS MAGAZINE!,0.67,positive
+content,The items were full size and stuff I would definitely use.,0.402,positive
+content,Love the magazine.,0.637,positive
+content,First issue came very quickly.,0.0,neutral
+customer_service,I ended up contacting Customer Service about my order and I got quick and timely response.,0.0,neutral
+customer_service,"I appreciated the quick service, because other magazines are not that quick.",0.511,positive
+customer_service,"And you inevitably end up on hold for a very long time before you can connect with a human.<br /><br />Yes, Cook's Illustrated was nice enough to send an email,",0.477,positive
+customer_service,"At that point, I became disappointed in the subject matter I saw on the NatGeo television channel, and in the articles in the monthly magazine, so I ceased supp",0.042,neutral
+billing,So I stopped the subscription and would rather choose the toys myself.,-0.291,negative
+billing,"I really didn't want a renewal and tried to stop it but must have selected the wrong option...it's okay that I have it now, just don't always have the time to k",-0.565,negative
+billing,BEWARE of this magazine and its tricky billing/fee practices!,-0.224,negative
+billing,"I like the content of the magazine very much, and have held two separate subscriptions over the last ten years.",0.361,positive
