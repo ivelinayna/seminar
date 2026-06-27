@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 from typing import Iterable, Sequence
+from html import unescape
 
 from .nlp_engine import get_light_nlp
 
@@ -25,15 +26,56 @@ _URL = re.compile(r"http\S+|www\.\S+")
 _NON_ALPHA = re.compile(r"[^a-zA-Z\s]")
 _MULTIPLE_SPACES = re.compile(r"\s+")
 
+# _NON_ALPHA strips apostrophes before tokenization, so contracted negations
+# must be expanded to their full word form first (e.g. "don't" -> "do not"),
+# or the "not" cue is lost ("don't" would otherwise become "don t").
+_APOSTROPHE = "['’]"
+_WONT = re.compile(r"\bwon" + _APOSTROPHE + r"t\b")
+_CANT_OR_CANNOT = re.compile(r"\b(can" + _APOSTROPHE + r"t|cannot)\b")
+_GENERIC_NT = re.compile(r"\b(\w+)n" + _APOSTROPHE + r"t\b")
+
+
+def _expand_negation_contractions(text: str) -> str:
+    """Expand contracted negations (won't, can't, don't, isn't, ...) to full words."""
+    text = _WONT.sub("will not", text)
+    text = _CANT_OR_CANNOT.sub("can not", text)
+    # Generic "n't" -> " not" covers don't, isn't, wasn't, doesn't, didn't,
+    # haven't, hadn't, shouldn't, wouldn't, couldn't, hasn't, weren't, aren't.
+    text = _GENERIC_NT.sub(lambda m: f"{m.group(1)} not", text)
+    return text
+
+
+# Keep simple negation cues even when stopwords are removed. They are central
+# sentiment features and allow bigrams such as "not worth" to survive.
+NEGATION_TERMS = {
+    "no",
+    "not",
+    "never",
+    "none",
+    "nor",
+    "neither",
+    "cannot",
+}
+
+
+def strip_html_urls(text: str) -> str:
+    """Remove HTML tags/entities and URLs while preserving ordinary punctuation."""
+    if not isinstance(text, str):
+        return ""
+    text = unescape(text)
+    text = _HTML_TAG.sub(" ", text)
+    text = _URL.sub(" ", text)
+    return _MULTIPLE_SPACES.sub(" ", text).strip()
+
 
 def clean_text(text: str) -> str:
     """Remove HTML tags, URLs and non-alphabetic characters; normalise whitespace."""
     if not isinstance(text, str):
         return ""
-    text = _HTML_TAG.sub(" ", text)
-    text = _URL.sub(" ", text)
+    text = strip_html_urls(text).lower()
+    text = _expand_negation_contractions(text)
     text = _NON_ALPHA.sub(" ", text)
-    text = _MULTIPLE_SPACES.sub(" ", text).strip().lower()
+    text = _MULTIPLE_SPACES.sub(" ", text).strip()
     return text
 
 
@@ -42,9 +84,10 @@ def _lemmatize_doc(doc, remove_stopwords: bool, min_token_length: int) -> list[s
     for token in doc:
         if token.is_space or token.is_punct:
             continue
-        if remove_stopwords and token.is_stop:
+        token_lower = token.text.strip().lower()
+        lemma = token.lemma_.strip().lower() or token_lower
+        if remove_stopwords and token.is_stop and token_lower not in NEGATION_TERMS and lemma not in NEGATION_TERMS:
             continue
-        lemma = token.lemma_.strip().lower() or token.text.strip().lower()
         if len(lemma) < min_token_length:
             continue
         tokens.append(lemma)
@@ -103,6 +146,7 @@ def split_into_sentences(text: str) -> list[str]:
     """
     if not isinstance(text, str) or not text.strip():
         return []
+    text = strip_html_urls(text)
     nlp = get_light_nlp()
     return [sent.text.strip() for sent in nlp(text).sents if sent.text.strip()]
 
@@ -114,7 +158,7 @@ def split_corpus_into_sentences(
     """Batched sentence splitting for a corpus; returns one list per document."""
     nlp = get_light_nlp()
     results: list[list[str]] = []
-    for doc in nlp.pipe((t if isinstance(t, str) else "" for t in texts),
+    for doc in nlp.pipe((strip_html_urls(t) if isinstance(t, str) else "" for t in texts),
                         batch_size=batch_size):
         results.append([s.text.strip() for s in doc.sents if s.text.strip()])
     return results

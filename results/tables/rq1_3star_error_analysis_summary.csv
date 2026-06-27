@@ -1,0 +1,2 @@
+n_three_star_test_reviews,predicted_positive_share,predicted_neutral_share,predicted_negative_share,neutral_recall,mean_confidence_pred_positive,mean_confidence_pred_neutral,mean_confidence_pred_negative,mean_length_correct,mean_length_incorrect,share_with_contrastive_marker,share_with_mixed_lexical_cues
+1248,0.1667,0.4479,0.3854,0.4479,0.6091,0.6064,0.6273,40.6,43.2,0.4159,0.1843

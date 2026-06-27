@@ -10,4 +10,4 @@ star_5_share,60.8%
 star_1_share,14.0%
 binary_imbalance_ratio,3.57 : 1
 ternary_neutral_share,7.7%
-vocab_unigrams_min_df_5,6308
+sample_vocab_corpus_freq_ge_5,6308

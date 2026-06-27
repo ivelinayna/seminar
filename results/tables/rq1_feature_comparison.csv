@@ -1,3 +1,5 @@
-features,n_features,accuracy,f1_macro,recall_negative
-tfidf_unigram,8838,0.8755,0.8607,0.8828
-tfidf_uni_bigram,20000,0.8849,0.8698,0.875
+features,n_features,f1_macro,accuracy,framing
+tfidf_unigram,8341,0.8723,0.905,binary
+tfidf_uni_bigram,20000,0.8876,0.918,binary
+tfidf_unigram,8819,0.6356,0.7923,ternary
+tfidf_uni_bigram,20000,0.6514,0.8128,ternary

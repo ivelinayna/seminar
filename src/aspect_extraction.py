@@ -1,13 +1,14 @@
 """
 Aspect extraction and sentence-level sentiment scoring for RQ2.
 
-Two extraction strategies are compared (per the interim-presentation plan):
+Two extraction views are used:
 
 * **Keyword-based:** a curated domain lexicon (delivery, packaging, quality,
-  price, content, customer service, billing/renewal). Interpretable and fast.
+  price, content, customer service, billing/renewal, advertising). Interpretable
+  and fast.
 * **Noun-phrase-based:** spaCy noun-chunks (or an NLTK fallback when the model
-  is absent), aggregated by frequency — a data-driven view of what reviewers
-  actually talk about.
+  is absent), aggregated by frequency as an exploratory candidate-discovery
+  view and cross-check, not as the final aspect classifier.
 
 Sentiment attribution — the methodological core
 ----------------------------------------------
@@ -26,36 +27,50 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from .nlp_engine import get_parser_nlp
-from .preprocessing import split_into_sentences, split_corpus_into_sentences, preprocess_review
+from .preprocessing import split_into_sentences, split_corpus_into_sentences, preprocess_review, strip_html_urls
 
 # --------------------------------------------------------------------------- #
 # Aspect lexicon
 # --------------------------------------------------------------------------- #
 # Extended beyond the original five: the EDA log-odds analysis surfaced
-# billing/renewal vocabulary (cancel, refund, charged) as a major theme for
-# subscription products, so it gets its own aspect.
+# billing/renewal and advertising vocabulary as major domain themes. Keywords
+# are intentionally aspect nouns/actions, not sentiment words or broad product
+# identifiers such as "box", "magazine", or "subscription".
 DEFAULT_ASPECT_KEYWORDS: dict[str, list[str]] = {
-    "delivery": ["delivery", "deliver", "shipping", "shipped", "arrived", "arrive",
-                 "delayed", "late", "fast", "shipment", "courier"],
-    "packaging": ["packaging", "package", "packaged", "box", "wrapped", "damaged",
-                  "sealed", "broken", "crushed"],
-    "quality": ["quality", "build", "material", "durable", "cheap", "sturdy",
-                "flimsy", "well made", "poorly made"],
-    "price": ["price", "priced", "value", "expensive", "overpriced", "worth",
-              "affordable", "cost", "pricey"],
-    "content": ["content", "selection", "variety", "curated", "curation", "items",
-                "products", "magazine", "issue", "article", "articles"],
-    "customer_service": ["service", "support", "response", "helpful", "rude",
-                         "representative", "contacted", "email"],
-    "billing": ["cancel", "cancelled", "cancellation", "refund", "refunded",
-                "charged", "charge", "billing", "subscription", "renew", "renewal",
-                "auto"],
+    "delivery": ["delivery", "deliver", "delivered", "shipping", "shipped",
+                 "shipment", "courier", "arrive", "arrived", "arrival"],
+    "packaging": ["packaging", "package", "packages", "packaged", "wrapping",
+                  "wrapped", "wrapper", "mailer", "envelope", "container"],
+    "quality": ["quality", "build", "construction", "workmanship", "fabric",
+                "ingredient", "ingredients"],
+    "price": ["price", "prices", "priced", "cost", "costs", "fee", "fees",
+              "money", "dollar", "dollars"],
+    "content": ["content", "selection", "variety", "curated", "curation",
+                "item", "items", "product", "products", "issue", "issues",
+                "article", "articles", "recipe", "recipes", "story", "stories",
+                "editorial", "edition", "editions", "toy", "toys", "treat",
+                "treats"],
+    "customer_service": ["customer service", "customer support", "support team",
+                         "service representative", "service representatives",
+                         "customer representative", "customer representatives",
+                         "support agent", "support agents",
+                         "customer care", "contacted customer service",
+                         "contacted support"],
+    "billing": ["cancel", "canceled", "cancelled", "cancellation", "unsubscribe",
+                "refund", "refunded", "charge", "charged", "charges", "billing",
+                "bill", "billed", "payment", "payments", "invoice", "renew",
+                "renewed", "renewal", "auto renew", "auto-renew",
+                "automatic renewal", "automatically renewed"],
+    "advertising": ["ad", "ads", "advertisement", "advertisements",
+                    "advertising", "advertise", "advertised", "sponsored",
+                    "commercial", "commercials", "promo", "promos"],
 }
 
 _ANALYZER = SentimentIntensityAnalyzer()
@@ -65,6 +80,24 @@ VADER_POS_THRESHOLD = 0.05
 VADER_NEG_THRESHOLD = -0.05
 
 
+def _keyword_pattern(keyword: str) -> re.Pattern:
+    """
+    Compile a keyword/phrase matcher with word boundaries.
+
+    This avoids the main false-positive problem of substring matching (e.g.
+    matching ``ad`` inside unrelated words) while still allowing flexible
+    whitespace inside multi-word phrases such as ``auto renew``.
+    """
+    parts = [re.escape(part) for part in keyword.lower().split()]
+    pattern = r"\b" + r"\s+".join(parts) + r"\b"
+    return re.compile(pattern)
+
+
+@lru_cache(maxsize=256)
+def _cached_keyword_pattern(keyword: str) -> re.Pattern:
+    return _keyword_pattern(keyword)
+
+
 # --------------------------------------------------------------------------- #
 # Aspect extraction
 # --------------------------------------------------------------------------- #
@@ -72,13 +105,18 @@ def extract_aspects_keyword(text: str, lexicon: dict[str, list[str]] | None = No
     """Return aspect categories whose keywords appear anywhere in the text."""
     if lexicon is None:
         lexicon = DEFAULT_ASPECT_KEYWORDS
-    text_lower = text.lower()
-    return [a for a, kws in lexicon.items() if any(kw in text_lower for kw in kws)]
+    text_lower = strip_html_urls(text).lower()
+    return [a for a, kws in lexicon.items() if sentence_mentions_aspect(text_lower, kws)]
 
 
 def sentence_mentions_aspect(sentence_lower: str, keywords: list[str]) -> bool:
-    """Whether a (lowercased) sentence mentions any keyword of an aspect."""
-    return any(kw in sentence_lower for kw in keywords)
+    """Whether a lowercased sentence mentions any keyword/phrase as a token."""
+    return any(_cached_keyword_pattern(kw).search(sentence_lower) for kw in keywords)
+
+
+def matched_aspect_keywords(sentence_lower: str, keywords: list[str]) -> list[str]:
+    """Return the concrete keywords/phrases matched in a sentence."""
+    return [kw for kw in keywords if _cached_keyword_pattern(kw).search(sentence_lower)]
 
 
 # --- noun-phrase extraction (spaCy if available, NLTK fallback otherwise) --- #
@@ -122,6 +160,7 @@ def extract_noun_phrases(text: str, min_length: int = 2) -> list[str]:
     falls back to an NLTK POS-tagger + regex NP chunker so the analysis still
     runs end-to-end.
     """
+    text = strip_html_urls(text)
     nlp = get_parser_nlp()
     if nlp is not None:
         doc = nlp(text)
@@ -136,7 +175,9 @@ def extract_noun_phrases(text: str, min_length: int = 2) -> list[str]:
 def top_noun_phrases(texts, n: int = 50, drop_pronouns: bool = True) -> list[tuple[str, int]]:
     """Aggregate noun phrases across a corpus and return the most frequent ones."""
     stop_np = {"it", "i", "they", "you", "we", "he", "she", "this", "that",
-               "these", "those", "me", "them", "us", "him", "her"}
+               "these", "those", "me", "them", "us", "him", "her", "what",
+               "who", "which", "all", "some", "something", "everything",
+               "anything", "nothing", "lots", "a lot"}
     counter: Counter = Counter()
     for text in texts:
         if not isinstance(text, str):
@@ -146,6 +187,31 @@ def top_noun_phrases(texts, n: int = 50, drop_pronouns: bool = True) -> list[tup
                 continue
             counter.update([np_])
     return counter.most_common(n)
+
+
+def noun_phrase_aspect_overlap(
+    noun_phrase_counts: list[tuple[str, int]],
+    lexicon: dict[str, list[str]] | None = None,
+) -> pd.DataFrame:
+    """
+    Map frequent noun phrases back to keyword aspects for a transparent
+    keyword-vs.-noun-phrase comparison.
+    """
+    if lexicon is None:
+        lexicon = DEFAULT_ASPECT_KEYWORDS
+    rows = []
+    for phrase, count in noun_phrase_counts:
+        phrase_lower = phrase.lower()
+        matched = [
+            aspect for aspect, kws in lexicon.items()
+            if sentence_mentions_aspect(phrase_lower, kws)
+        ]
+        rows.append({
+            "noun_phrase": phrase,
+            "count": count,
+            "matched_aspects": ";".join(matched) if matched else "",
+        })
+    return pd.DataFrame(rows)
 
 
 # --------------------------------------------------------------------------- #
@@ -299,6 +365,248 @@ def aspect_sentiment_classifier(
         preds = classifier.predict(vectorizer.transform(processed))
         result[aspect] = Counter(preds).most_common(1)[0][0]
     return result
+
+
+# --------------------------------------------------------------------------- #
+# "High coverage" / "substantial" — formal threshold (RQ2)
+# --------------------------------------------------------------------------- #
+# An aspect counts as high-coverage / substantial within a category if at
+# least this share of the category's reviews mention it. Applied consistently
+# wherever the project calls an aspect "substantial" or "high coverage".
+HIGH_COVERAGE_MENTION_RATE_THRESHOLD = 0.05
+
+
+def is_high_coverage(mention_rate: float, threshold: float = HIGH_COVERAGE_MENTION_RATE_THRESHOLD) -> bool:
+    """Whether an aspect's mention rate clears the high-coverage threshold."""
+    return mention_rate >= threshold
+
+
+# --------------------------------------------------------------------------- #
+# Billing lexicon sensitivity check
+# --------------------------------------------------------------------------- #
+def billing_keyword_vader_valence(lexicon: dict[str, list[str]] | None = None) -> pd.DataFrame:
+    """VADER compound score of each billing keyword scored in isolation."""
+    if lexicon is None:
+        lexicon = DEFAULT_ASPECT_KEYWORDS
+    return pd.DataFrame([
+        {"keyword": kw, "vader_compound_isolated": vader_compound(kw)}
+        for kw in lexicon["billing"]
+    ])
+
+
+def mask_keyword_in_sentence(sentence: str, keyword: str) -> str:
+    """Replace a matched aspect keyword/phrase with a neutral placeholder token."""
+    return _cached_keyword_pattern(keyword).sub("something", sentence)
+
+
+def aspect_sentiment_vader_masked(
+    review_text: str,
+    lexicon: dict[str, list[str]] | None = None,
+) -> dict[str, dict]:
+    """
+    Lexicon-sensitivity counterpart to :func:`aspect_sentiment_vader`: before
+    scoring a sentence with VADER, every matched aspect keyword is masked out
+    (replaced with a neutral placeholder). If sentiment is largely driven by
+    the matched keyword itself (e.g. "cancel", "refund") rather than the
+    surrounding context, masking should pull the score toward neutral. This is
+    a leakage/lexicon-sensitivity check, not an alternative primary method.
+    """
+    if lexicon is None:
+        lexicon = DEFAULT_ASPECT_KEYWORDS
+    sentences = split_into_sentences(review_text)
+    bucket: dict[str, list[float]] = {}
+    for sent in sentences:
+        s_low = sent.lower()
+        for aspect, kws in lexicon.items():
+            matched = matched_aspect_keywords(s_low, kws)
+            if not matched:
+                continue
+            masked_sent = sent
+            for kw in matched:
+                masked_sent = mask_keyword_in_sentence(masked_sent, kw)
+            bucket.setdefault(aspect, []).append(vader_compound(masked_sent))
+    return {
+        aspect: {
+            "compound": float(np.mean(scores)),
+            "label": vader_label(float(np.mean(scores))),
+            "n_sentences": len(scores),
+        }
+        for aspect, scores in bucket.items()
+    }
+
+
+def split_into_clauses(sentence: str) -> list[str]:
+    """
+    Conservative clause split for the RQ2 sensitivity analysis.
+
+    Splits on a semicolon or on one of a small set of contrastive/coordinating
+    markers (which typically signal a shift to a different aspect or
+    polarity within the same sentence: "good food, but slow delivery").
+    Splitting is intentionally narrow (word-boundary, case-insensitive) so it
+    does not fragment ordinary sentences; this is a sensitivity check, not a
+    replacement for the sentence-level primary method.
+    """
+    markers = [";", "but", "however", "although", "though", "yet", "while", "whereas"]
+    pattern = re.compile(
+        r"\s*;\s*|\b(?:but|however|although|though|yet|while|whereas)\b",
+        re.IGNORECASE,
+    )
+    parts = [p.strip() for p in pattern.split(sentence) if p and p.strip()]
+    return parts if parts else [sentence]
+
+
+CLAUSE_SPLIT_MARKERS = [";", "but", "however", "although", "though", "yet", "while", "whereas"]
+
+
+def aspect_sentiment_vader_clause(
+    review_text: str,
+    lexicon: dict[str, list[str]] | None = None,
+) -> dict[str, dict]:
+    """
+    Clause-level counterpart to :func:`aspect_sentiment_vader` (RQ2 sensitivity
+    analysis). Sentences are first split into clauses on
+    :data:`CLAUSE_SPLIT_MARKERS`; an aspect is then attributed only to the
+    clause(s) that actually contain its keyword, so a sentence such as
+    "the content is great but billing is a nightmare" assigns *content* to the
+    first clause and *billing* to the second, instead of scoring both aspects
+    against the whole (mixed-sentiment) sentence.
+    """
+    if lexicon is None:
+        lexicon = DEFAULT_ASPECT_KEYWORDS
+    sentences = split_into_sentences(review_text)
+    clauses: list[str] = []
+    for sent in sentences:
+        clauses.extend(split_into_clauses(sent))
+    return _aspects_from_sentences(clauses, lexicon)
+
+
+def sentence_vs_clause_review_table(
+    texts,
+    categories,
+    lexicon: dict[str, list[str]] | None = None,
+) -> pd.DataFrame:
+    """
+    Per-review, per-aspect sentence-level vs. clause-level VADER compound, for
+    the RQ2 clause-level sensitivity analysis. One row per (review, aspect)
+    that is mentioned under either method.
+    """
+    if lexicon is None:
+        lexicon = DEFAULT_ASPECT_KEYWORDS
+    rows = []
+    for idx, (text, cat) in enumerate(zip(texts, categories)):
+        if not isinstance(text, str):
+            continue
+        sent_scores = aspect_sentiment_vader(text, lexicon)
+        clause_scores = aspect_sentiment_vader_clause(text, lexicon)
+        aspects = set(sent_scores) | set(clause_scores)
+        for aspect in aspects:
+            s = sent_scores.get(aspect)
+            c = clause_scores.get(aspect)
+            rows.append({
+                "review_idx": idx,
+                "category": cat,
+                "aspect": aspect,
+                "sentence_compound": s["compound"] if s else np.nan,
+                "clause_compound": c["compound"] if c else np.nan,
+            })
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df["diff"] = df["clause_compound"] - df["sentence_compound"]
+        df["affected"] = df["diff"].abs() > 1e-9
+    return df
+
+
+def bootstrap_review_level_aspect_ci(
+    long_df: pd.DataFrame,
+    n_replications: int = 2000,
+    random_state: int = 42,
+    ci: float = 0.95,
+    minuend_category: str | None = None,
+) -> pd.DataFrame:
+    """
+    Review-level (cluster) bootstrap CI for mean VADER compound per
+    (category, aspect), plus the CI of the cross-category difference.
+
+    Resamples whole **reviews** (``review_idx``) with replacement rather than
+    individual aspect-sentence rows, since several rows in ``long_df`` can come
+    from the same review and are not independent observations. ``long_df``
+    must have columns ``review_idx, category, aspect, compound`` (the output of
+    :func:`build_aspect_sentiment_table`).
+
+    The difference column is named after the actual category strings (e.g.
+    ``diff_Magazine_Subscriptions_minus_Subscription_Boxes``) so the direction
+    is unambiguous from the column name alone — no separate "a"/"b" convention
+    to misread when copying values into a report. ``minuend_category`` picks
+    which category is the minuend (first term); it defaults to the
+    alphabetically *first* category for a deterministic default, but callers
+    that want a specific direction (e.g. "Magazine minus Boxes") should pass it
+    explicitly.
+    """
+    rng = np.random.RandomState(random_state)
+    categories = sorted(long_df["category"].unique())
+    if len(categories) != 2:
+        raise ValueError("Cross-category difference CI requires exactly two categories")
+    if minuend_category is None:
+        cat_minuend, cat_subtrahend = categories
+    elif minuend_category == categories[0]:
+        cat_minuend, cat_subtrahend = categories[0], categories[1]
+    elif minuend_category == categories[1]:
+        cat_minuend, cat_subtrahend = categories[1], categories[0]
+    else:
+        raise ValueError(f"minuend_category {minuend_category!r} not in {categories}")
+    diff_col = f"diff_{cat_minuend}_minus_{cat_subtrahend}"
+    aspects = sorted(long_df["aspect"].unique())
+
+    # Vectorised resampling: pivot to one row per review, one column per
+    # aspect (NaN where that review doesn't mention the aspect), then resample
+    # ROW INDICES (= whole reviews) and take nanmean per column. This avoids
+    # concatenating thousands of per-review frames on every replication, which
+    # does not scale to tens of thousands of reviews x 2000 replications.
+    pivots = {}
+    for cat in categories:
+        piv = (
+            long_df[long_df["category"] == cat]
+            .pivot_table(index="review_idx", columns="aspect", values="compound", aggfunc="mean")
+            .reindex(columns=aspects)
+        )
+        pivots[cat] = piv.to_numpy(dtype=float)
+
+    lo_pct, hi_pct = (1 - ci) / 2 * 100, (1 + ci) / 2 * 100
+    samples = {}
+    with np.errstate(invalid="ignore"):
+        for cat in categories:
+            mat = pivots[cat]
+            n = mat.shape[0]
+            boot_means = np.empty((n_replications, len(aspects)))
+            for i in range(n_replications):
+                idx = rng.randint(0, n, size=n)
+                boot_means[i] = np.nanmean(mat[idx], axis=0)
+            samples[cat] = boot_means
+
+    point_means = long_df.groupby(["category", "aspect"])["compound"].mean()
+    rows = []
+    for j, asp in enumerate(aspects):
+        row = {"aspect": asp}
+        for cat in categories:
+            vals = samples[cat][:, j]
+            vals = vals[~np.isnan(vals)]
+            lo, hi = (np.percentile(vals, [lo_pct, hi_pct]) if len(vals) else (np.nan, np.nan))
+            row[f"mean_{cat}"] = round(float(point_means.get((cat, asp), np.nan)), 4)
+            row[f"ci_low_{cat}"] = round(float(lo), 4)
+            row[f"ci_high_{cat}"] = round(float(hi), 4)
+        diffs = samples[cat_minuend][:, j] - samples[cat_subtrahend][:, j]
+        diffs = diffs[~np.isnan(diffs)]
+        dlo, dhi = (np.percentile(diffs, [lo_pct, hi_pct]) if len(diffs) else (np.nan, np.nan))
+        row[diff_col] = round(float(point_means.get((cat_minuend, asp), np.nan)) - float(point_means.get((cat_subtrahend, asp), np.nan)), 4)
+        row["diff_ci_low"] = round(float(dlo), 4)
+        row["diff_ci_high"] = round(float(dhi), 4)
+        row["diff_ci_excludes_zero"] = bool(dlo > 0 or dhi < 0)
+        rows.append(row)
+    out = pd.DataFrame(rows)
+    out.attrs["minuend_category"] = cat_minuend
+    out.attrs["subtrahend_category"] = cat_subtrahend
+    out.attrs["diff_column"] = diff_col
+    return out
 
 
 def compare_vader_vs_classifier(

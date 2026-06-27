@@ -1,0 +1,2 @@
+f1_macro_unigram,f1_macro_uni_bigram,diff,ci_low,ci_high,ci_excludes_zero,interpretation,n_replications,random_state
+0.8752717897181963,0.8878986454455531,0.012626855727356778,0.00905828092246821,0.0160809337280965,True,stable difference under this holdout,2000,42

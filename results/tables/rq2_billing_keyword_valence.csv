@@ -1,0 +1,24 @@
+keyword,vader_compound_isolated
+cancel,-0.25
+canceled,0.0
+cancelled,-0.25
+cancellation,0.0
+unsubscribe,0.0
+refund,0.0
+refunded,0.0
+charge,0.0
+charged,-0.2023
+charges,-0.2732
+billing,0.0
+bill,0.0
+billed,0.0
+payment,0.0
+payments,0.0
+invoice,0.0
+renew,0.0
+renewed,0.0
+renewal,0.0
+auto renew,0.0
+auto-renew,0.0
+automatic renewal,0.0
+automatically renewed,0.0

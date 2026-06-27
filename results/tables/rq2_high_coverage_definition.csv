@@ -1,0 +1,17 @@
+category,aspect,mention_rate,mean_compound,high_coverage
+Magazine_Subscriptions,content,0.3849,0.3297,True
+Magazine_Subscriptions,price,0.1056,0.3242,True
+Magazine_Subscriptions,billing,0.0847,0.0509,True
+Magazine_Subscriptions,advertising,0.0771,0.148,True
+Magazine_Subscriptions,delivery,0.0403,0.1705,False
+Magazine_Subscriptions,quality,0.0326,0.2753,False
+Magazine_Subscriptions,customer_service,0.0076,-0.0287,False
+Magazine_Subscriptions,packaging,0.0034,0.2599,False
+Subscription_Boxes,content,0.4296,0.331,True
+Subscription_Boxes,price,0.1777,0.2166,True
+Subscription_Boxes,quality,0.1153,0.3396,True
+Subscription_Boxes,billing,0.0932,-0.0913,True
+Subscription_Boxes,delivery,0.0903,0.2181,True
+Subscription_Boxes,packaging,0.0609,0.3312,True
+Subscription_Boxes,customer_service,0.0203,0.2077,False
+Subscription_Boxes,advertising,0.0124,0.118,False

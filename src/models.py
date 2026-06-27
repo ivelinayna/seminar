@@ -2,33 +2,49 @@
 Classifier definitions and imbalance-handling utilities for sentiment polarity.
 
 Covers the majority-class baseline plus three classical models — Multinomial
-Naive Bayes, Logistic Regression and Gradient Boosting (LightGBM) — with a
-consistent interface for fair comparison (RQ1).
+Naive Bayes, Logistic Regression and ``sklearn.ensemble.GradientBoostingClassifier`` —
+with a consistent interface for comparison (RQ1).
 
 Imbalance handling
 ------------------
-``LogisticRegression`` and ``LGBMClassifier`` accept ``class_weight='balanced'``
-directly. ``MultinomialNB`` does **not**; for it, imbalance is handled at the
-data level via :func:`resample_balanced` (random over-/under-sampling). The
-original code accepted a ``class_weight`` argument for NB and silently ignored
-it — that footgun is removed here.
+``LogisticRegression`` accepts ``class_weight='balanced'`` directly.
+``MultinomialNB`` does **not**; for it, imbalance is handled at the data level
+via :func:`resample_balanced` (random over-/under-sampling). Scikit-learn's
+``GradientBoostingClassifier`` has no class-weight argument, so balanced runs
+use sample weights inside a small explicit wrapper. To keep runtime tractable,
+gradient boosting is trained on a deterministic stratified sample; this is
+reported in the results and paper rather than hidden behind an automatic
+implementation fallback.
 """
 
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 from sklearn.dummy import DummyClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.utils import resample
 
-try:
-    from lightgbm import LGBMClassifier
-    LIGHTGBM_AVAILABLE = True
-except ImportError:
-    LIGHTGBM_AVAILABLE = False
-
 RANDOM_STATE = 42
+SKLEARN_GB_MAX_TRAIN_SAMPLES = 12000
+SKLEARN_GB_N_ESTIMATORS = 40
+SKLEARN_GB_LEARNING_RATE = 0.05
+SKLEARN_GB_MAX_DEPTH = 3
+
+# Small, deterministic hyperparameter grids for the validation-only search in
+# notebooks/03_modeling_rq1.ipynb. Kept intentionally modest (a handful of
+# configurations per model) so the search is computationally realistic for a
+# seminar project, not an exhaustive sweep.
+NB_ALPHA_GRID = [0.1, 0.5, 1.0, 2.0]
+LR_C_GRID = [0.1, 0.5, 1.0, 2.0, 5.0]
+LR_CLASS_WEIGHT_GRID = [None, "balanced"]
+GB_N_ESTIMATORS_GRID = [40, 80]
+GB_LEARNING_RATE_GRID = [0.05, 0.1]
+GB_MAX_DEPTH_GRID = [2, 3]
+GB_CLASS_WEIGHT_GRID = [None, "balanced"]
 
 
 # --------------------------------------------------------------------------- #
@@ -67,22 +83,90 @@ def get_logistic_regression(
 
 def get_gradient_boosting(
     class_weight: str | None = "balanced",
-    n_estimators: int = 200,
-    learning_rate: float = 0.05,
-    num_leaves: int = 31,
+    n_estimators: int = SKLEARN_GB_N_ESTIMATORS,
+    learning_rate: float = SKLEARN_GB_LEARNING_RATE,
+    max_depth: int = SKLEARN_GB_MAX_DEPTH,
+    max_train_samples: int = SKLEARN_GB_MAX_TRAIN_SAMPLES,
 ):
-    """LightGBM gradient boosting classifier."""
-    if not LIGHTGBM_AVAILABLE:
-        raise ImportError("LightGBM is not installed. Run: pip install lightgbm")
-    return LGBMClassifier(
+    """
+    ``sklearn.ensemble.GradientBoostingClassifier`` used in the final experiment.
+
+    This deliberately does not auto-switch to another implementation. Alternative
+    gradient-boosting variants should be separate, explicitly named experiments.
+    """
+    return SklearnGradientBoosting(
+        class_weight=class_weight,
         n_estimators=n_estimators,
         learning_rate=learning_rate,
-        num_leaves=num_leaves,
-        class_weight=class_weight,
-        random_state=RANDOM_STATE,
-        n_jobs=-1,
-        verbose=-1,
+        max_depth=max_depth,
+        max_train_samples=max_train_samples,
     )
+
+
+class SklearnGradientBoosting:
+    """Small wrapper adding balanced sample weights to sklearn GB."""
+
+    def __init__(
+        self,
+        class_weight: str | None = "balanced",
+        n_estimators: int = SKLEARN_GB_N_ESTIMATORS,
+        learning_rate: float = SKLEARN_GB_LEARNING_RATE,
+        max_depth: int = SKLEARN_GB_MAX_DEPTH,
+        max_train_samples: int = SKLEARN_GB_MAX_TRAIN_SAMPLES,
+    ):
+        self.class_weight = class_weight
+        self.n_estimators = n_estimators
+        self.learning_rate = learning_rate
+        self.max_depth = max_depth
+        self.max_train_samples = max_train_samples
+        self.fit_n_samples_ = None
+        self.fit_sampled_ = False
+        self.model = GradientBoostingClassifier(
+            n_estimators=n_estimators,
+            learning_rate=learning_rate,
+            max_depth=max_depth,
+            random_state=RANDOM_STATE,
+        )
+
+    def fit(self, X, y):
+        y = np.asarray(y)
+        if len(y) > self.max_train_samples:
+            rng = np.random.RandomState(RANDOM_STATE)
+            keep = []
+            classes, counts = np.unique(y, return_counts=True)
+            for cls, count in zip(classes, counts):
+                cls_idx = np.where(y == cls)[0]
+                n_cls = max(1, int(round(self.max_train_samples * count / len(y))))
+                n_cls = min(n_cls, len(cls_idx))
+                keep.extend(rng.choice(cls_idx, size=n_cls, replace=False))
+            keep = np.array(sorted(keep))
+            X = X[keep]
+            y = y[keep]
+            self.fit_sampled_ = True
+        else:
+            self.fit_sampled_ = False
+        self.fit_n_samples_ = len(y)
+        sample_weight = None
+        if self.class_weight == "balanced":
+            sample_weight = compute_sample_weight(class_weight="balanced", y=y)
+        self.model.fit(X, y, sample_weight=sample_weight)
+        return self
+
+    def predict(self, X):
+        return self.model.predict(X)
+
+    def predict_proba(self, X):
+        return self.model.predict_proba(X)
+
+    def get_params(self, deep: bool = True) -> dict:
+        return {
+            "class_weight": self.class_weight,
+            "n_estimators": self.n_estimators,
+            "learning_rate": self.learning_rate,
+            "max_depth": self.max_depth,
+            "max_train_samples": self.max_train_samples,
+            "random_state": RANDOM_STATE,
+        }
 
 
 def get_all_models(class_weight: str | None = "balanced", include_baseline: bool = True) -> dict:
@@ -98,8 +182,7 @@ def get_all_models(class_weight: str | None = "balanced", include_baseline: bool
         models["majority_baseline"] = get_majority_baseline()
     models["naive_bayes"] = get_naive_bayes()
     models["logistic_regression"] = get_logistic_regression(class_weight=class_weight)
-    if LIGHTGBM_AVAILABLE:
-        models["gradient_boosting"] = get_gradient_boosting(class_weight=class_weight)
+    models["gradient_boosting"] = get_gradient_boosting(class_weight=class_weight)
     return models
 
 
@@ -152,3 +235,26 @@ def resample_balanced(
     # Shuffle so classes are not block-ordered.
     order = np.random.RandomState(random_state).permutation(len(y_res))
     return X_res[order], y_res[order]
+
+
+# --------------------------------------------------------------------------- #
+# Validation-only model/hyperparameter selection
+# --------------------------------------------------------------------------- #
+def select_best_config(candidates: list[dict], minority_label: str) -> pd.DataFrame:
+    """
+    Rank candidate configurations evaluated on the validation split.
+
+    Each candidate dict must contain ``name``, ``f1_macro`` and
+    ``recall_<minority_label>``. Primary criterion is validation macro-F1
+    (descending); minority-class recall is the transparent tie-breaker. The
+    final test set must never appear in ``candidates`` — selection happens
+    before it is touched (see notebooks/03_modeling_rq1.ipynb, Section on
+    validation-only selection).
+    """
+    df = pd.DataFrame(candidates)
+    recall_col = f"recall_{minority_label}"
+    df = df.sort_values(["f1_macro", recall_col], ascending=[False, False]).reset_index(drop=True)
+    df["selected"] = False
+    if len(df):
+        df.loc[0, "selected"] = True
+    return df

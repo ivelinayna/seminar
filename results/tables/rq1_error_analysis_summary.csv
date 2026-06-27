@@ -1,0 +1,8 @@
+error_category,count,percent
+potential rating-text disagreement / possible label noise candidate,47,47.0
+very short or context-free review,25,25.0
+mixed sentiment,14,14.0
+domain ambiguity,8,8.0
+probable genuine model error,4,4.0
+aspect conflict,1,1.0
+negation,1,1.0

@@ -29,6 +29,10 @@ ENV/
 build/
 dist/
 *.egg-info/
+*.zip
+
+#Internal working notes (process/meta files, not part of the scientific deliverable)
+internal/
 
 #Jupyter Notebook
 .ipynb_checkpoints

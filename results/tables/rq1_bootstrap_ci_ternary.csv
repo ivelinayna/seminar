@@ -1,0 +1,6 @@
+metric,point_estimate,ci_low,ci_high
+accuracy,0.7853,0.7794,0.7912
+f1_macro,0.6442,0.6365,0.6521
+recall_positive,0.8476,0.8411,0.8539
+recall_neutral,0.4479,0.4207,0.4752
+recall_negative,0.7308,0.7185,0.7432

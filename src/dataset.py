@@ -90,6 +90,100 @@ def chronological_split(
     return train.reset_index(drop=True), test.reset_index(drop=True)
 
 
+def chronological_split_three_way(
+    df: pd.DataFrame,
+    dev_train_size: float = 0.64,
+    validation_size: float = 0.16,
+    by_category: bool = True,
+    time_col: str = "timestamp",
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Split chronologically into dev-train / validation / final-test.
+
+    Default 64% / 16% / 20% (so dev-train + validation together reproduce the
+    oldest 80% used by :func:`chronological_split`). The final 20% is reserved
+    for a single evaluation after all feature, imbalance-handling and
+    hyperparameter decisions have been made on the validation slice — it must
+    not be inspected before that point (see notebooks/03_modeling_rq1.ipynb).
+    """
+
+    def _split_one(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        frame = frame.sort_values(time_col, kind="stable")
+        n = len(frame)
+        cut_dev = int(n * dev_train_size)
+        cut_val = int(n * (dev_train_size + validation_size))
+        return frame.iloc[:cut_dev], frame.iloc[cut_dev:cut_val], frame.iloc[cut_val:]
+
+    if by_category:
+        dev_parts, val_parts, test_parts = [], [], []
+        for _, frame in df.groupby("category", sort=False):
+            dv, va, te = _split_one(frame)
+            dev_parts.append(dv)
+            val_parts.append(va)
+            test_parts.append(te)
+        dev = pd.concat(dev_parts).sort_values(time_col, kind="stable")
+        val = pd.concat(val_parts).sort_values(time_col, kind="stable")
+        test = pd.concat(test_parts).sort_values(time_col, kind="stable")
+    else:
+        dev, val, test = _split_one(df)
+    return dev.reset_index(drop=True), val.reset_index(drop=True), test.reset_index(drop=True)
+
+
+def assert_no_temporal_overlap(
+    dev_df: pd.DataFrame,
+    val_df: pd.DataFrame,
+    test_df: pd.DataFrame,
+    time_col: str = "timestamp",
+    category_col: str | None = "category",
+) -> None:
+    """
+    Raise if dev-train/validation/test overlap in time.
+
+    Checked **per category** when ``category_col`` is given, since the split is
+    performed within each category — two categories can legitimately have
+    different absolute date ranges.
+    """
+    def _check(dev_g, val_g, test_g, label: str) -> None:
+        if len(dev_g) and len(val_g) and dev_g[time_col].max() > val_g[time_col].min():
+            raise AssertionError(f"dev-train overlaps validation in time ({label})")
+        if len(val_g) and len(test_g) and val_g[time_col].max() > test_g[time_col].min():
+            raise AssertionError(f"validation overlaps final test in time ({label})")
+
+    if category_col is None:
+        _check(dev_df, val_df, test_df, label="all")
+        return
+    categories = set(dev_df[category_col]) | set(val_df[category_col]) | set(test_df[category_col])
+    for cat in categories:
+        _check(
+            dev_df[dev_df[category_col] == cat],
+            val_df[val_df[category_col] == cat],
+            test_df[test_df[category_col] == cat],
+            label=cat,
+        )
+
+
+def deterministic_stratified_sample(
+    df: pd.DataFrame,
+    label_col: str,
+    n: int = 12000,
+    random_state: int = 42,
+) -> pd.DataFrame:
+    """
+    Deterministic, label-stratified sample of ``n`` rows (proportional
+    per-class allocation), used for the matched-sample fair model-family
+    comparison in RQ1 — the same sampled rows are reused for every model so
+    that NB, LR and Gradient Boosting train on an identical training set.
+    """
+    frac = n / len(df)
+    parts = []
+    for _, group in df.groupby(label_col, sort=False):
+        k = max(1, round(len(group) * frac))
+        k = min(k, len(group))
+        parts.append(group.sample(n=k, random_state=random_state))
+    sample = pd.concat(parts)
+    return sample.sample(frac=1, random_state=random_state).reset_index(drop=True)
+
+
 def prepare_task(
     train_df: pd.DataFrame,
     test_df: pd.DataFrame,

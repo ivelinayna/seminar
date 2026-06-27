@@ -1,0 +1,17 @@
+category,aspect,mention_count,mention_rate_per_review,mentions_per_100_words
+Magazine_Subscriptions,content,27518,0.3849,1.0039
+Magazine_Subscriptions,price,7550,0.1056,0.2754
+Magazine_Subscriptions,billing,6056,0.0847,0.2209
+Magazine_Subscriptions,advertising,5515,0.0771,0.2012
+Magazine_Subscriptions,delivery,2881,0.0403,0.1051
+Magazine_Subscriptions,quality,2332,0.0326,0.0851
+Magazine_Subscriptions,customer_service,540,0.0076,0.0197
+Magazine_Subscriptions,packaging,240,0.0034,0.0088
+Subscription_Boxes,content,6967,0.4296,0.9055
+Subscription_Boxes,price,2881,0.1777,0.3744
+Subscription_Boxes,quality,1869,0.1153,0.2429
+Subscription_Boxes,billing,1511,0.0932,0.1964
+Subscription_Boxes,delivery,1465,0.0903,0.1904
+Subscription_Boxes,packaging,987,0.0609,0.1283
+Subscription_Boxes,customer_service,329,0.0203,0.0428
+Subscription_Boxes,advertising,201,0.0124,0.0261

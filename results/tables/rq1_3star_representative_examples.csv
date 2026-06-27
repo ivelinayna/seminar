@@ -1,0 +1,7 @@
+category,rating,y_pred,confidence,text
+Magazine_Subscriptions,3,positive,0.9999717568126296,Love this!!!
+Magazine_Subscriptions,3,positive,0.9982369963451874,Great
+Magazine_Subscriptions,3,neutral,0.9441824364640261,Articles are somewhat interesting.  Too many added advertisements.
+Magazine_Subscriptions,3,neutral,0.9336187229180969,"An okay magazine... They are always thin and the content is decent but, I’d like more o performance car tests."
+Magazine_Subscriptions,3,negative,0.9585056621840456,"The wording on this item was not clear at purchase, and I really thought I was getting a ""subscription"" for a magazine. Nope, it's a single. $7+ for one. Chatted to cancel and surprisingly got a partial refund."
+Magazine_Subscriptions,3,negative,0.9548131387289261,"Only received 3 issues, very disappointed"

@@ -1,0 +1,17 @@
+category,aspect,sentence_compound,clause_compound,diff,n_reviews
+Magazine_Subscriptions,advertising,0.1714,0.1392,-0.0322,604
+Magazine_Subscriptions,billing,0.0356,0.0198,-0.0158,651
+Magazine_Subscriptions,content,0.3216,0.3069,-0.0147,3104
+Magazine_Subscriptions,customer_service,0.0128,-0.0012,-0.014,63
+Magazine_Subscriptions,delivery,0.1789,0.1458,-0.0331,340
+Magazine_Subscriptions,packaging,0.2515,0.2411,-0.0104,27
+Magazine_Subscriptions,price,0.3162,0.303,-0.0132,834
+Magazine_Subscriptions,quality,0.307,0.2878,-0.0192,290
+Subscription_Boxes,advertising,0.0763,0.0632,-0.0131,102
+Subscription_Boxes,billing,-0.0798,-0.0978,-0.018,727
+Subscription_Boxes,content,0.3317,0.3206,-0.0111,3435
+Subscription_Boxes,customer_service,0.1761,0.1806,0.0045,159
+Subscription_Boxes,delivery,0.2332,0.2125,-0.0207,737
+Subscription_Boxes,packaging,0.3299,0.3242,-0.0057,474
+Subscription_Boxes,price,0.221,0.2001,-0.0209,1413
+Subscription_Boxes,quality,0.3479,0.3409,-0.007,913

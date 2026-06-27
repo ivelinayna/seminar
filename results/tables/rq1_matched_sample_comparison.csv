@@ -1,0 +1,4 @@
+model,config,n_train,accuracy,f1_macro,recall_positive,recall_negative
+naive_bayes,nb_alpha0.1_none,12000,0.8549,0.8137,0.9631,0.6163
+logistic_regression,lr_C2.0_balanced,12000,0.8914,0.8756,0.9064,0.8581
+gradient_boosting,gb_n80_lr0.1_d3_balanced,12000,0.8406,0.8148,0.8819,0.7495

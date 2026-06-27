@@ -1,0 +1,9 @@
+aspect,mean_Magazine_Subscriptions,ci_low_Magazine_Subscriptions,ci_high_Magazine_Subscriptions,mean_Subscription_Boxes,ci_low_Subscription_Boxes,ci_high_Subscription_Boxes,diff_Magazine_Subscriptions_minus_Subscription_Boxes,diff_ci_low,diff_ci_high,diff_ci_excludes_zero
+advertising,0.148,0.1385,0.1571,0.118,0.0594,0.1727,0.0299,-0.0258,0.0882,False
+billing,0.0509,0.0421,0.0601,-0.0913,-0.1091,-0.074,0.1422,0.1215,0.1614,True
+content,0.3297,0.3257,0.3338,0.331,0.3224,0.3397,-0.0013,-0.0105,0.0082,False
+customer_service,-0.0287,-0.0653,0.0081,0.2077,0.1518,0.2615,-0.2364,-0.3017,-0.1717,True
+delivery,0.1705,0.1577,0.1835,0.2181,0.1956,0.2389,-0.0476,-0.0728,-0.0213,True
+packaging,0.2599,0.2127,0.3085,0.3312,0.3059,0.357,-0.0713,-0.128,-0.0172,True
+price,0.3242,0.3148,0.3336,0.2166,0.2012,0.2312,0.1076,0.0908,0.1255,True
+quality,0.2753,0.2584,0.2919,0.3396,0.3208,0.359,-0.0642,-0.0893,-0.0386,True

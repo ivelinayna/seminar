@@ -1,29 +1,81 @@
-aspect,example_sentence,vader_compound,vader_label
-delivery,"In this latest subscription, the publisher has started very frustrating practices and I've been billed for things I didn't request.",-0.493,negative
-delivery,"So I hung up, and the next evening, 30 hours later, called again.",0.0,neutral
-delivery,"She kindly offered to place the order for me, but by that point, I had had such problems getting through to customer service that I decided I didn't want anythi",0.921,positive
-delivery,"He was very nice, and told me he had found the subscription, which he would cancel, and that I should be receiving my PayPal refund within 7-10 days.<br /><br /",0.272,positive
-packaging,I've tried Ipsy and Birchbox but Allure is by far my favorite!,0.648,positive
-packaging,I'm a mask freak so I fell I love with my first box loaded with masks of all kinds.,0.318,positive
-packaging,"The second box, I was blown away again.",0.0,neutral
-packaging,"So far, I am loving the Allure Beauty Box!!",0.851,positive
-quality,"If I didn't want to keep the DVD and pay for it, Discover required that I go through a several-step procedure to send the material back.",-0.159,negative
-quality,"Lastly, the magazine identified an address of my family member and has started to send materials to my sister -- for me, doing similar things like sending unwan",0.153,positive
-quality,I hope Discover takes the hint and stops sending me all this material.,0.318,positive
-quality,I couldn't pass up the subscription price which is definitely cheaper than newsstand.,0.402,positive
-price,The cost can't be beat.,0.0,neutral
-price,"The toys that I received didn't have good reviews on amazon.com, although their ""list"" prices were always more than $20.",-0.341,negative
-price,"Overall, this box was a good value for our cat and she found some new favorite toys.",0.807,positive
-price,I couldn't pass up the subscription price which is definitely cheaper than newsstand.,0.402,positive
-content,I LOVE THIS MAGAZINE!,0.67,positive
-content,The items were full size and stuff I would definitely use.,0.402,positive
-content,Love the magazine.,0.637,positive
-content,First issue came very quickly.,0.0,neutral
-customer_service,I ended up contacting Customer Service about my order and I got quick and timely response.,0.0,neutral
-customer_service,"I appreciated the quick service, because other magazines are not that quick.",0.511,positive
-customer_service,"And you inevitably end up on hold for a very long time before you can connect with a human.<br /><br />Yes, Cook's Illustrated was nice enough to send an email,",0.477,positive
-customer_service,"At that point, I became disappointed in the subject matter I saw on the NatGeo television channel, and in the articles in the monthly magazine, so I ceased supp",0.042,neutral
-billing,So I stopped the subscription and would rather choose the toys myself.,-0.291,negative
-billing,"I really didn't want a renewal and tried to stop it but must have selected the wrong option...it's okay that I have it now, just don't always have the time to k",-0.565,negative
-billing,BEWARE of this magazine and its tricky billing/fee practices!,-0.224,negative
-billing,"I like the content of the magazine very much, and have held two separate subscriptions over the last ten years.",0.361,positive
+aspect,matched_keywords,example_sentence,vader_compound,vader_label,sample_no_within_aspect,manual_is_correct,manual_note
+delivery,arrive,"It took a while to arrive but once it did, he read it cover to cover.",0.0,neutral,0,True,"delivery, shipping or arrival discussed"
+delivery,arrived,These are packed very well and have arrived with no damage so far.,0.615,positive,1,True,"delivery, shipping or arrival discussed"
+delivery,arrived,"Did not receive all issues, & the one I did get arrived months late.",0.0,neutral,2,True,"delivery, shipping or arrival discussed"
+delivery,arrived,"And it auto-renewed 3 months later (as advertised, but I thought I would at least receive my 3 months of issues before that happened, since the only issue I received arrived months late.",0.0,neutral,3,True,"delivery, shipping or arrival discussed"
+delivery,arrive,My only negative comment as that I ordered this for months ago and it will not arrive until February.,-0.572,negative,4,True,"delivery, shipping or arrival discussed"
+delivery,delivery,"However, I’m disappointed in the delivery and customer service.",-0.477,negative,5,True,"delivery, shipping or arrival discussed"
+delivery,arrived,My first issue (the April issue) finally arrived March 2020.,0.0,neutral,6,True,"delivery, shipping or arrival discussed"
+delivery,delivered,"I know the day they get delivered, when I come through the back door after work the dog will frantically herd me to the front door to get the mail.",-0.34,negative,7,True,"delivery, shipping or arrival discussed"
+delivery,arrived,It arrived exactly as expected.,0.0,neutral,8,True,"delivery, shipping or arrival discussed"
+delivery,arrive,The plants that arrive are in wonderful condition and are wrapped extremely carefully.,0.67,positive,9,True,"delivery, shipping or arrival discussed"
+packaging,packaging,"I received my first box of tea after only a few days, in very nice packaging.",0.475,positive,0,True,package or packaging discussed
+packaging,packaging,"In the photos I have included the front and backs of the packaging, a close up of the Lemon Ginger Yerba Mate, and the inside of the bag of the next tea I am brewing, Blueberry Rooibos!",-0.126,negative,1,True,package or packaging discussed
+packaging,packaging,It comes in beautiful packaging and provides teas in my comfort zone as well as new ones to try.,0.832,positive,2,True,package or packaging discussed
+packaging,package,The first package was full of items.,0.0,neutral,3,True,package or packaging discussed
+packaging,packaging,Horrible quality of plants and horrible packaging.,-0.791,negative,4,True,package or packaging discussed
+packaging,packaging,Very very dissatisfied and you should be ashamed for the picks you chose for good loyal monthly subscribers we should get quality plants and excellent packaging.,0.531,positive,5,True,package or packaging discussed
+packaging,mailer,"His subscription doesn't end until June, and I have already received a subscription renewal mailer.",0.0,neutral,6,False,false positive: renewal mailer is not product packaging
+packaging,wrapped,The plants are well wrapped so they are not damaged in transit and they are all so adorable!,0.837,positive,7,True,package or packaging discussed
+packaging,envelope,I especially liked the reduced subscription price & the fact that it was mailed in an envelope.,0.475,positive,8,True,package or packaging discussed
+packaging,wrapped,The plants that arrive are in wonderful condition and are wrapped extremely carefully.,0.67,positive,9,True,package or packaging discussed
+quality,quality,"When it comes to gear, the editors work hard to keep quality AND cost in mind and are careful to test less-well-known, but worthy brands.",0.606,positive,0,True,"quality, construction or composition discussed"
+quality,quality,My only complaint is the quality of the T-Shirt could be better.,0.178,positive,1,True,"quality, construction or composition discussed"
+quality,quality,Quality products and excellent way to try new beauty items,0.818,positive,2,True,"quality, construction or composition discussed"
+quality,ingredients,"Upon opening, I was greeted by 4 foil front pouches with descriptions, ingredients and instructions for brewing.",0.273,positive,3,True,"quality, construction or composition discussed"
+quality,quality,It is a very high quality magazine.,0.0,neutral,4,True,"quality, construction or composition discussed"
+quality,quality,"The Cricket Magazine Group produces a number of high-quality, no nonsense magazines for kids.",0.373,positive,5,True,"quality, construction or composition discussed"
+quality,quality,Horrible quality of plants and horrible packaging.,-0.791,negative,6,True,"quality, construction or composition discussed"
+quality,quality,Very very dissatisfied and you should be ashamed for the picks you chose for good loyal monthly subscribers we should get quality plants and excellent packaging.,0.531,positive,7,True,"quality, construction or composition discussed"
+quality,quality,It's really good quality yarn (it's the stuff that you think about buying but wait cause it's expensive) and I like the surprise.,0.79,positive,8,True,"quality, construction or composition discussed"
+quality,quality,"They may be quality, but the most per ounce I have ever paid for potato chips, cheese puffs, candy sized cookies, and individual granola bars.",0.0,neutral,9,True,"quality, construction or composition discussed"
+price,cost,The cost can't be beat.,0.0,neutral,0,True,"price, cost, fee or money discussed"
+price,prices,"The toys that I received didn't have good reviews on amazon.com, although their ""list"" prices were always more than $20.",-0.341,negative,1,True,"price, cost, fee or money discussed"
+price,fee,BEWARE of this magazine and its tricky billing/fee practices!,-0.224,negative,2,True,"price, cost, fee or money discussed"
+price,fee,"They automatically extended my subscription without asking me, and the onus is on the subscriber to cancel the subscription in order not to pay the fee.",-0.179,negative,3,True,"price, cost, fee or money discussed"
+price,price,I couldn't pass up the subscription price which is definitely cheaper than newsstand.,0.402,positive,4,True,"price, cost, fee or money discussed"
+price,cost,"When it comes to gear, the editors work hard to keep quality AND cost in mind and are careful to test less-well-known, but worthy brands.",0.606,positive,5,True,"price, cost, fee or money discussed"
+price,price,This is a departure from other outdoors mags that seem to sell recommendations to high retail price manufacturers.,0.0,neutral,6,True,"price, cost, fee or money discussed"
+price,price,Yes you can sometimes get two (2) speakers for that price.,0.402,positive,7,True,"price, cost, fee or money discussed"
+price,money,"If only I had money left over for the $10,000 interconnects and the $1000 per foot speaker cable.",0.0,neutral,8,True,"price, cost, fee or money discussed"
+price,money,"No money left over for records to buy though, darn.",-0.296,negative,9,True,"price, cost, fee or money discussed"
+content,toys,I have been subscribed for 3 months and are not impressed by the toys that I received.,-0.372,negative,0,True,product/editorial content discussed
+content,toys,"The toys that I received didn't have good reviews on amazon.com, although their ""list"" prices were always more than $20.",-0.341,negative,1,True,product/editorial content discussed
+content,toys,"Even though, I am doubt that I would spend $20 on those toys.",-0.361,negative,2,True,product/editorial content discussed
+content,toys,So I stopped the subscription and would rather choose the toys myself.,-0.291,negative,3,True,product/editorial content discussed
+content,items,The items were full size and stuff I would definitely use.,0.402,positive,4,True,product/editorial content discussed
+content,item,"A big plus, i received a free full size item separately to try out!",0.556,positive,5,True,product/editorial content discussed
+content,issue,First issue came very quickly.,0.0,neutral,6,False,false positive: magazine issue is mentioned only in a delivery context
+content,toys,"Our 7 month old ""catten"" needed some new toys upon which to focus her energy.",0.273,positive,7,True,product/editorial content discussed
+content,toy,She LOVED the butterfly wand toy and the catnip carrot in this box.,0.684,positive,8,True,product/editorial content discussed
+content,toy,She will drag the wand toy over to us and yell at us until we play with her.,0.128,positive,9,True,product/editorial content discussed
+customer_service,customer service,I ended up contacting Customer Service about my order and I got quick and timely response.,0.0,neutral,0,True,specific customer-service/support interaction discussed
+customer_service,customer service,"She kindly offered to place the order for me, but by that point, I had had such problems getting through to customer service that I decided I didn't want anything more to do with National Geographic.",-0.418,negative,1,True,specific customer-service/support interaction discussed
+customer_service,customer service,"However, I’m disappointed in the delivery and customer service.",-0.477,negative,2,True,specific customer-service/support interaction discussed
+customer_service,customer service,The customer service this company has cannot be surpassed.,0.0,neutral,3,True,specific customer-service/support interaction discussed
+customer_service,customer service,"Customer service is outstanding too, responded on Sunday of Holiday weekend.",0.772,positive,4,True,specific customer-service/support interaction discussed
+customer_service,customer service,"keep trying to get you to re-subscribe, customer service not good",-0.341,negative,5,True,specific customer-service/support interaction discussed
+customer_service,customer service,Great customer service.,0.625,positive,6,True,specific customer-service/support interaction discussed
+customer_service,customer service,After about 15 frustrating minutes I found an email for customer service that worked. (,-0.44,negative,7,True,specific customer-service/support interaction discussed
+customer_service,customer service,"I called their Customer Service after they DID NOT RESPOND to my email, and they said their offers ""had not caught up"" to the current price, whatever that means.",0.0,neutral,8,True,specific customer-service/support interaction discussed
+customer_service,customer service,"I will say that Amazon's customer service was extremely courteous, and I got a refund in full in a timely manner, but the situation was pretty frustrating as a whole.",0.411,positive,9,True,specific customer-service/support interaction discussed
+billing,renewal,"I really didn't want a renewal and tried to stop it but must have selected the wrong option...it's okay that I have it now, just don't always have the time to keep up with it.",-0.565,negative,0,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,billing,BEWARE of this magazine and its tricky billing/fee practices!,-0.224,negative,1,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,billed,"In this latest subscription, the publisher has started very frustrating practices and I've been billed for things I didn't request.",-0.493,negative,2,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,cancel,"They automatically extended my subscription without asking me, and the onus is on the subscriber to cancel the subscription in order not to pay the fee.",-0.179,negative,3,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,renewal,You get one cursory postcard telling you of this renewal.,0.0,neutral,4,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,bill,I did that but I still received a bill for $12.95 for the DVD!!,0.0,neutral,5,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,bill,"Lastly, the magazine identified an address of my family member and has started to send materials to my sister -- for me, doing similar things like sending unwanted materials and then trying to bill me for it.",0.153,positive,6,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,cancel,"Had my subscription for two years, and don't think I'm going to cancel anytime in next few years at lest.",-0.25,negative,7,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,cancel,"Once you subscribe, you cannot cancel your subscription online.",0.188,positive,8,True,"billing, charge, renewal, refund or cancellation discussed"
+billing,renewal,"Yes, Cook's Illustrated was nice enough to send an email, warning me that the auto-renewal was about to kick in.",0.477,positive,9,True,"billing, charge, renewal, refund or cancellation discussed"
+advertising,ads,I also like looking at the male celebrity pictures and the guy models on ads.,0.361,positive,0,True,advertising or ads discussed
+advertising,ads,"They started putting ads in a few years ago, but it doesn't take away from the content.",0.0,neutral,1,True,advertising or ads discussed
+advertising,ads,I don't read ads anyway.,0.0,neutral,2,True,advertising or ads discussed
+advertising,advertisements,First time.. There are too many advertisements and not enough pictures and content... so far..,0.0,neutral,3,True,advertising or ads discussed
+advertising,ads,A lot of ads almost more ads then articles.,0.0,neutral,4,True,advertising or ads discussed
+advertising,ads,I enjoy the articles and the ads.,0.494,positive,5,True,advertising or ads discussed
+advertising,advertised,"And it auto-renewed 3 months later (as advertised, but I thought I would at least receive my 3 months of issues before that happened, since the only issue I received arrived months late.",0.0,neutral,6,False,"false positive: ""as advertised"" means as stated, not advertising content"
+advertising,advertisements,"Nice Magazine, but to many advertisements.",0.226,positive,7,True,advertising or ads discussed
+advertising,ads,Mostly ads and a few wood working articles.,0.0,neutral,8,True,advertising or ads discussed
+advertising,ads,There are no ads.,-0.296,negative,9,True,advertising or ads discussed

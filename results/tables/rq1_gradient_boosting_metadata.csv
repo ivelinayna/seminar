@@ -1,0 +1,5 @@
+framing,model_key,split,implementation,sklearn_version,random_state,n_estimators,learning_rate,max_depth,class_weight_or_sample_weight,train_split_n,fit_n_samples,fit_sampled,max_train_samples
+binary,gboost,"dev_train -> validation (illustrative demo, not final test)",sklearn.ensemble.GradientBoostingClassifier,1.9.0,42,40,0.05,3,,51496,12000,True,12000
+binary,gboost_balanced,"dev_train -> validation (illustrative demo, not final test)",sklearn.ensemble.GradientBoostingClassifier,1.9.0,42,40,0.05,3,balanced,51496,12000,True,12000
+ternary,gboost,"dev_train -> validation (illustrative demo, not final test)",sklearn.ensemble.GradientBoostingClassifier,1.9.0,42,40,0.05,3,,55983,12000,True,12000
+ternary,gboost_balanced,"dev_train -> validation (illustrative demo, not final test)",sklearn.ensemble.GradientBoostingClassifier,1.9.0,42,40,0.05,3,balanced,55983,12000,True,12000
