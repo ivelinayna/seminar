@@ -34,10 +34,6 @@ SKLEARN_GB_N_ESTIMATORS = 40
 SKLEARN_GB_LEARNING_RATE = 0.05
 SKLEARN_GB_MAX_DEPTH = 3
 
-# Small, deterministic hyperparameter grids for the validation-only search in
-# notebooks/03_modeling_rq1.ipynb. Kept intentionally modest (a handful of
-# configurations per model) so the search is computationally realistic for a
-# seminar project, not an exhaustive sweep.
 NB_ALPHA_GRID = [0.1, 0.5, 1.0, 2.0]
 LR_C_GRID = [0.1, 0.5, 1.0, 2.0, 5.0]
 LR_CLASS_WEIGHT_GRID = [None, "balanced"]
@@ -47,17 +43,11 @@ GB_MAX_DEPTH_GRID = [2, 3]
 GB_CLASS_WEIGHT_GRID = [None, "balanced"]
 
 
-# --------------------------------------------------------------------------- #
-# Baseline
-# --------------------------------------------------------------------------- #
 def get_majority_baseline() -> DummyClassifier:
     """Always predicts the most frequent class — the floor every model must beat."""
     return DummyClassifier(strategy="most_frequent", random_state=RANDOM_STATE)
 
 
-# --------------------------------------------------------------------------- #
-# Classifiers
-# --------------------------------------------------------------------------- #
 def get_naive_bayes(alpha: float = 1.0) -> MultinomialNB:
     """
     Multinomial Naive Bayes.
@@ -186,9 +176,6 @@ def get_all_models(class_weight: str | None = "balanced", include_baseline: bool
     return models
 
 
-# --------------------------------------------------------------------------- #
-# Data-level imbalance handling (for models without class_weight, e.g. NB)
-# --------------------------------------------------------------------------- #
 def resample_balanced(
     X,
     y,
@@ -237,9 +224,6 @@ def resample_balanced(
     return X_res[order], y_res[order]
 
 
-# --------------------------------------------------------------------------- #
-# Validation-only model/hyperparameter selection
-# --------------------------------------------------------------------------- #
 def select_best_config(candidates: list[dict], minority_label: str) -> pd.DataFrame:
     """
     Rank candidate configurations evaluated on the validation split.

@@ -36,13 +36,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from .nlp_engine import get_parser_nlp
 from .preprocessing import split_into_sentences, split_corpus_into_sentences, preprocess_review, strip_html_urls
 
-# --------------------------------------------------------------------------- #
-# Aspect lexicon
-# --------------------------------------------------------------------------- #
-# Extended beyond the original five: the EDA log-odds analysis surfaced
-# billing/renewal and advertising vocabulary as major domain themes. Keywords
-# are intentionally aspect nouns/actions, not sentiment words or broad product
-# identifiers such as "box", "magazine", or "subscription".
+
 DEFAULT_ASPECT_KEYWORDS: dict[str, list[str]] = {
     "delivery": ["delivery", "deliver", "delivered", "shipping", "shipped",
                  "shipment", "courier", "arrive", "arrived", "arrival"],
@@ -75,7 +69,6 @@ DEFAULT_ASPECT_KEYWORDS: dict[str, list[str]] = {
 
 _ANALYZER = SentimentIntensityAnalyzer()
 
-# VADER convention for mapping the compound score to a label.
 VADER_POS_THRESHOLD = 0.05
 VADER_NEG_THRESHOLD = -0.05
 
@@ -98,9 +91,6 @@ def _cached_keyword_pattern(keyword: str) -> re.Pattern:
     return _keyword_pattern(keyword)
 
 
-# --------------------------------------------------------------------------- #
-# Aspect extraction
-# --------------------------------------------------------------------------- #
 def extract_aspects_keyword(text: str, lexicon: dict[str, list[str]] | None = None) -> list[str]:
     """Return aspect categories whose keywords appear anywhere in the text."""
     if lexicon is None:
@@ -119,7 +109,6 @@ def matched_aspect_keywords(sentence_lower: str, keywords: list[str]) -> list[st
     return [kw for kw in keywords if _cached_keyword_pattern(kw).search(sentence_lower)]
 
 
-# --- noun-phrase extraction (spaCy if available, NLTK fallback otherwise) --- #
 _NLTK_READY = False
 _NP_CHUNKER = None
 _TOKEN_RE = re.compile(r"[A-Za-z]+")
@@ -214,9 +203,6 @@ def noun_phrase_aspect_overlap(
     return pd.DataFrame(rows)
 
 
-# --------------------------------------------------------------------------- #
-# Sentence-level sentiment — VADER (primary method)
-# --------------------------------------------------------------------------- #
 def vader_compound(sentence: str) -> float:
     """VADER compound polarity score in [-1, 1] for one sentence."""
     return _ANALYZER.polarity_scores(sentence)["compound"]
@@ -330,9 +316,6 @@ def aggregate_by_category(long_df: pd.DataFrame, n_reviews_per_category: dict | 
     return out.round(4)
 
 
-# --------------------------------------------------------------------------- #
-# Robustness check — RQ1 classifier applied to aspect sentences
-# --------------------------------------------------------------------------- #
 def aspect_sentiment_classifier(
     review_text: str,
     aspects: list[str],
@@ -367,12 +350,6 @@ def aspect_sentiment_classifier(
     return result
 
 
-# --------------------------------------------------------------------------- #
-# "High coverage" / "substantial" — formal threshold (RQ2)
-# --------------------------------------------------------------------------- #
-# An aspect counts as high-coverage / substantial within a category if at
-# least this share of the category's reviews mention it. Applied consistently
-# wherever the project calls an aspect "substantial" or "high coverage".
 HIGH_COVERAGE_MENTION_RATE_THRESHOLD = 0.05
 
 
@@ -381,9 +358,6 @@ def is_high_coverage(mention_rate: float, threshold: float = HIGH_COVERAGE_MENTI
     return mention_rate >= threshold
 
 
-# --------------------------------------------------------------------------- #
-# Billing lexicon sensitivity check
-# --------------------------------------------------------------------------- #
 def billing_keyword_vader_valence(lexicon: dict[str, list[str]] | None = None) -> pd.DataFrame:
     """VADER compound score of each billing keyword scored in isolation."""
     if lexicon is None:
@@ -557,11 +531,6 @@ def bootstrap_review_level_aspect_ci(
     diff_col = f"diff_{cat_minuend}_minus_{cat_subtrahend}"
     aspects = sorted(long_df["aspect"].unique())
 
-    # Vectorised resampling: pivot to one row per review, one column per
-    # aspect (NaN where that review doesn't mention the aspect), then resample
-    # ROW INDICES (= whole reviews) and take nanmean per column. This avoids
-    # concatenating thousands of per-review frames on every replication, which
-    # does not scale to tens of thousands of reviews x 2000 replications.
     pivots = {}
     for cat in categories:
         piv = (

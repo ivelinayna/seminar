@@ -26,11 +26,10 @@ from spacy.language import Language
 
 MODEL_NAME = "en_core_web_sm"
 
-# Module-level flags so callers can branch on what is actually available.
 SPACY_MODEL_AVAILABLE: bool = False
 
-_nlp_light: Language | None = None  # cleaning / lemmatization / sentence split
-_nlp_parser: Language | None = None  # noun-phrase chunking (needs a parser)
+_nlp_light: Language | None = None
+_nlp_parser: Language | None = None
 _notified = False
 
 
@@ -54,7 +53,6 @@ def _build_fallback_light() -> Language:
         nlp.add_pipe("lemmatizer", config={"mode": "lookup"})
         nlp.initialize()
     except Exception:
-        # spacy-lookups-data missing: lemmatizer falls back to identity.
         warnings.warn(
             "Lookup lemmatizer unavailable (install 'spacy-lookups-data'); "
             "tokens will not be lemmatized in fallback mode."

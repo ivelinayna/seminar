@@ -20,15 +20,13 @@ from html import unescape
 
 from .nlp_engine import get_light_nlp
 
-# Compile regex patterns once.
+
 _HTML_TAG = re.compile(r"<[^>]+>")
 _URL = re.compile(r"http\S+|www\.\S+")
 _NON_ALPHA = re.compile(r"[^a-zA-Z\s]")
 _MULTIPLE_SPACES = re.compile(r"\s+")
 
-# _NON_ALPHA strips apostrophes before tokenization, so contracted negations
-# must be expanded to their full word form first (e.g. "don't" -> "do not"),
-# or the "not" cue is lost ("don't" would otherwise become "don t").
+
 _APOSTROPHE = "['’]"
 _WONT = re.compile(r"\bwon" + _APOSTROPHE + r"t\b")
 _CANT_OR_CANNOT = re.compile(r"\b(can" + _APOSTROPHE + r"t|cannot)\b")
@@ -39,14 +37,10 @@ def _expand_negation_contractions(text: str) -> str:
     """Expand contracted negations (won't, can't, don't, isn't, ...) to full words."""
     text = _WONT.sub("will not", text)
     text = _CANT_OR_CANNOT.sub("can not", text)
-    # Generic "n't" -> " not" covers don't, isn't, wasn't, doesn't, didn't,
-    # haven't, hadn't, shouldn't, wouldn't, couldn't, hasn't, weren't, aren't.
     text = _GENERIC_NT.sub(lambda m: f"{m.group(1)} not", text)
     return text
 
 
-# Keep simple negation cues even when stopwords are removed. They are central
-# sentiment features and allow bigrams such as "not worth" to survive.
 NEGATION_TERMS = {
     "no",
     "not",

@@ -91,9 +91,6 @@ def find_hardest_examples(
     return wrong.head(n)
 
 
-# --------------------------------------------------------------------------- #
-# Plotting & export
-# --------------------------------------------------------------------------- #
 def plot_confusion_matrix(
     cm,
     labels: list,

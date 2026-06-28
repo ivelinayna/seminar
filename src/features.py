@@ -42,7 +42,6 @@ def build_tfidf_vectorizer(
     )
 
 
-# Named feature configurations compared in RQ1.
 FEATURE_CONFIGS: dict[str, dict] = {
     "tfidf_unigram": {"ngram_range": (1, 1)},
     "tfidf_uni_bigram": {"ngram_range": (1, 2)},
