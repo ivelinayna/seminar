@@ -3,8 +3,8 @@
 % ----------------------------------------------------------------------------
 % Editable title-page fields
 % ----------------------------------------------------------------------------
-\newcommand{\thetitle}{Classical NLP for Sentiment and Aspect Based Analysis of Amazon Reviews}
-\newcommand{\thesubtitle}{A Study of the Trade Off Between Predictive Performance and Interpretability}
+\newcommand{\thetitle}{Sentiment Analysis and Opinion Mining on Product Reviews}
+\newcommand{\thesubtitle}{} % Subtitle intentionally left empty so the official topic title is the only title on the cover page.
 \newcommand{\theauthor}{Ivelina Yaneva}
 \newcommand{\thematric}{3185090}
 \newcommand{\thechair}{Lehrstuhl f\"ur Wirtschaftsinformatik und K\"unstliche Intelligenz im Unternehmen}
@@ -28,6 +28,7 @@
 \usepackage{subcaption}
 \usepackage{float}
 \usepackage{xcolor}
+\usepackage{calligra}
 \usepackage[expansion=false]{microtype}
 
 % Keep running text visually uniform: avoid automatic word-break hyphenation.
@@ -64,9 +65,13 @@
 {\large Seminar Paper \par}
 \vspace{1.5cm}
 {\Huge \bfseries \thetitle \par}
-\vspace{0.6cm}
-{\Large \thesubtitle \par}
-\vspace{1.4cm}
+\if\relax\detokenize{\thesubtitle}\relax
+  \vspace{1.8cm}
+\else
+  \vspace{0.6cm}
+  {\Large \thesubtitle \par}
+  \vspace{1.4cm}
+\fi
 
 \IfFileExists{logo.png}
   {\includegraphics[height=6.5cm]{logo.png}}
@@ -95,52 +100,33 @@ Supervisor: \thesupervisor\par}
 % ============================ ABSTRACT ======================================
 \section*{Abstract}
 \noindent
-Online reviews pair a star rating with free text that explains it, offering a
-continuous, survey free feedback signal, provided the text can be read at scale.
-This paper builds an end to end classical NLP pipeline (no large language
-models) that turns 87{,}713 Amazon reviews from two subscription categories into
-structured opinion data, and studies the central trade off between predictive
-performance and interpretability. For document level polarity (RQ1) we compare a
-majority class baseline against Naive Bayes, Logistic Regression and gradient
-boosting on TF-IDF features, under binary and ternary framings and with explicit
-class imbalance handling. Feature representation, imbalance handling and
-hyperparameters are selected on a held out validation slice; final test
-labels, predictions and performance metrics are never used for model or
-hyperparameter selection (the descriptive exploratory analysis in Section
-\ref{sec:eda} runs on the full dataset, including the test period, as is
-standard practice for EDA). Bootstrap confidence intervals and a matched sample
-comparison give every model family identical training data. Logistic Regression
-with balanced class weights is the strongest observed model under this
-evaluated setup (binary macro-F1 $0.888$) without sacrificing feature level
-interpretability, including in the matched sample comparison;
-the headline accuracy of a trivial baseline ($69\%$ on the final test slice) is shown to be misleading
-because it never identifies a single negative review. A ternary framing exposes
-persistent difficulty under the evaluated setup: the minority 3 star
-(neutral) class collapses to below $1\%$ recall for Naive Bayes without
-rebalancing, and a dedicated automatic analysis of true 3 star test reviews
-shows the model cannot reliably separate mildly positive from mildly negative
-phrasing. For aspect based sentiment (RQ2) we segment
-reviews into sentences, detect eight aspects with a cleaned keyword lexicon,
-use noun phrases for exploratory candidate discovery, and score each
-aspect mentioning sentence with VADER, a
-lexicon scorer chosen because the document classifier is out of distribution on
-single sentences. The lexicon deliberately excludes broad product identifiers
-such as box, magazine and subscription, and removes sentiment
-words from aspect detection. Across both categories, billing
-(cancel/refund/charged) is the weakest high coverage aspect (mention rate
-$\geq 5\%$) in both categories, while content, quality and
-price are the most positive high coverage aspects. Billing related
-complaint language is frequent and scores negative under the lexicon,
-especially for Subscription Boxes, and a clause level sensitivity analysis
-reinforces the direction of this signal; however, a billing lexicon masking
-check shows the polarity is not robust for Subscription Boxes: masking
-the triggering terms themselves shifts the mean sentiment from $-0.080$ to
-$+0.044$, reversing its sign, so part of the unmasked negativity reflects the
-lexicon valence of words like cancel rather than surrounding review
-context alone. The strongest domain specific negative coefficient of the
-interpretable classifier is the token cancel, complementary, not
-independently confirmatory, evidence for the same billing signal the aspect
-pipeline surfaces. All findings are descriptive and associative, not causal.
+Online reviews combine structured star ratings with free text that explains
+customer satisfaction or dissatisfaction. This paper builds a reproducible
+classical NLP pipeline, without large language models, to transform 87{,}713
+Amazon Reviews 2023 from two subscription related categories into structured
+sentiment and aspect information. For document level polarity, we compare a
+majority baseline, Multinomial Naive Bayes, Logistic Regression and Gradient
+Boosting on TF-IDF unigram and bigram features under binary and ternary
+sentiment framings. Class imbalance is handled explicitly, and models are
+evaluated with accuracy, macro-F1, per class recall, confusion matrices and
+bootstrap confidence intervals.
+
+The strongest observed model is balanced Logistic Regression, reaching a binary
+macro-F1 of $0.888$ on the final chronological test set while preserving feature
+level interpretability. Accuracy alone is shown to be misleading, since the
+majority baseline fails to identify negative reviews. The ternary setting
+exposes a persistent limitation of bag of words representations: 3 star reviews
+are difficult to separate because they often contain mixed or mildly expressed
+sentiment.
+
+For aspect based sentiment, reviews are segmented into sentences, aspect
+mentions are detected through a cleaned keyword lexicon and noun phrase
+exploration, and aspect sentiment is scored with VADER. Across both categories,
+content is the most frequently discussed aspect, while billing emerges as the
+weakest high coverage aspect. However, a masking check shows that part of the
+billing signal depends on the valence of trigger words such as cancel and
+refund. The findings are therefore interpreted as descriptive and associative,
+not causal.
 
 \clearpage
 \tableofcontents
@@ -1364,7 +1350,11 @@ sources.
 \vspace{1.5cm}
 
 \noindent
-\theplace, \thedate \hfill \rule{6cm}{0.4pt}\\
-\phantom{\theplace, \thedate} \hfill \theauthor
+\theplace, \thedate \hfill
+\begin{tabular}{c}
+{\Large\calligra Yaneva}\\[-0.6ex]
+\rule{6cm}{0.4pt}\\[-0.1ex]
+\theauthor
+\end{tabular}
 
 \end{document}
